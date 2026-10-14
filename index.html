@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DexTwist: Dexterous Hand Retargeting for Twist Motion via Mixed Reality-based Teleoperation</title>
+  <meta name="description" content="DexTwist: functional twist retargeting for MR-based dexterous teleoperation.">
+  <meta property="og:title" content="DexTwist">
+  <meta property="og:description" content="Functional twist retargeting for MR-based dexterous teleoperation.">
+  <meta property="og:image" content="static/images/teaser.png">
+  <link rel="stylesheet" href="static/css/style.css">
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <h1>DexTwist</h1>
+    <h2>Dexterous Hand Retargeting for Twist Motion<br>via Mixed Reality-based Teleoperation</h2>
+
+    <p class="authors">
+      <a href="https://github.com/DongmyoungL">Dongmyoung Lee</a><sup>1*</sup>,
+      <a href="#">Chengxi Li</a><sup>1*</sup>,
+      <a href="https://orcid.org/0000-0003-1897-7664">Dongheui Lee</a><sup>1,2</sup>
+    </p>
+    <p class="affils">
+      <span><sup>1</sup>Autonomous Systems Lab, TU Wien</span>
+      <span><sup>2</sup>Institute of Robotics and Mechatronics, DLR</span>
+      <span class="eqc"><sup>*</sup>Equal contribution</span>
+    </p>
+
+    <div class="buttons">
+      <a class="btn" href="https://arxiv.org/abs/2605.12182">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 7V3.5L18.5 9zM8 13h2.2a1.8 1.8 0 0 1 0 3.6H9.2V18H8zm1.2 1v1.6h.9a.8.8 0 0 0 0-1.6zM12.3 13h1.5a2.5 2.5 0 0 1 0 5h-1.5zm1.2 1v3h.3a1.5 1.5 0 0 0 0-3zM16.7 13H19v1h-1.1v1h1v1h-1v2h-1.2z"/></svg>Paper</a>
+      <a class="btn" href="#video">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10a2 2 0 0 1 2 2v2.5l4-2.5v8l-4-2.5V16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg>Video</a>
+      <a class="btn" href="#bibtex">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5C4 8.4 6.2 6 10 5.5v2.2c-1.9.4-2.8 1.5-2.8 3.3H10V18H4zm9 0C13 8.4 15.2 6 19 5.5v2.2c-1.9.4-2.8 1.5-2.8 3.3H19V18h-6z"/></svg>BibTeX</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="teaser">
+    <p class="lead">
+      <b>DexTwist</b> retargets <i>function</i>, not pose: it estimates the operator's screw axis and twist angle from a
+      tripod pinch and refines robot hand joints so the robot actually turns the object.
+    </p>
+    <figure>
+      <img src="static/images/teaser.png" alt="DexTwist system overview">
+      <figcaption>
+        <b>Overview.</b> An operator wearing an MR headset performs a tripod-pinch twist. DexTwist extracts the
+        intended screw axis and accumulated twist, then produces robot hand and arm commands that preserve the twist
+        function under human–robot embodiment mismatch.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section id="abstract">
+    <h3>Abstract</h3>
+    <p>
+      Dexterous teleoperation via Mixed Reality (MR)-based interfaces offers a scalable paradigm for transferring human
+      manipulation skills to dexterous robot hands. However, conventional retargeting approaches that minimize kinematic
+      dissimilarity (e.g., joint angle or fingertip position error) often fail in contact-rich rotational manipulation,
+      such as cap opening, key turning, and bolt screwing. This failure stems from the embodiment gap: mismatched link
+      lengths, joint axes/limits, and fingertip geometry can cause direct pose imitation to induce tangential fingertip
+      sliding rather than stable object rotation, resulting in screw axis drift, contact slip, and grasp instability.
+    </p>
+    <p>
+      To address this, we propose DexTwist, a functional twist-retargeting framework for MR-based dexterous
+      teleoperation. DexTwist detects a tripod pinch, estimates the operator's intended screw axis and twist magnitude,
+      and applies a real-time residual joint-space refinement that tracks turning progress while regularizing the robot
+      tripod geometry. The refinement minimizes a virtual-object objective defined by turning angle, screw axis
+      consistency, fingertip closure, and tripod stability. Simulation and real-world experiments show that DexTwist
+      improves turning angle tracking and screw axis stability compared with a vector-based retargeting baseline.
+    </p>
+  </section>
+
+  <section id="video">
+    <h3>Video</h3>
+    <!-- Replace VIDEO_ID with your YouTube ID, or swap for a <video> tag pointing to static/videos/*.mp4 -->
+    <div class="video-wrap">
+      <iframe src="static/videos/teaser.mp4" title="DexTwist video" allowfullscreen></iframe>
+    </div>
+  </section>
+
+  <section id="method">
+    <h3>How DexTwist Works</h3>
+
+    <h4>1. MR-based teleoperation pipeline</h4>
+    <p>
+      An Apple Vision Pro provides the hand pose. We build a palm frame from the wrist and index/pinky knuckles and map
+      its pose to the end-effector of a Franka FR3 under Cartesian impedance control. Camera streams from the workspace
+      are shown in the headset for monitoring.
+    </p>
+    <figure>
+      <img src="static/images/system.png" alt="Teleoperation interface">
+      <figcaption><b>Interface.</b> (a) Multi-view real-time visual feedback. (b) Hand palm coordinate construction.</figcaption>
+    </figure>
+
+    <h4>2. Tripod detection and twist intent</h4>
+    <p>
+      A tripod pinch (thumb–index–middle) activates twist retargeting. The screw axis is the normal of the fingertip tripod, and turning is accumulated as a scalar
+      $\theta_{\text{task}}$ that persists across re-grasps, so <b>ratcheting</b> is supported.
+    </p>
+    <!-- <div class="eq">
+      $$\mathbf{a}_h = \operatorname{unit}\big((\mathbf{p}_{ind}-\mathbf{p}_{th})\times(\mathbf{p}_{mid}-\mathbf{p}_{th})\big)$$
+    </div> -->
+
+    <h4>3. Residual functional refinement</h4>
+    <p>
+      Starting from the vector-retargeted hand configuration, DexTwist refines the tripod joints each control cycle by
+      minimizing a virtual-object objective in the robot palm frame:
+    </p>
+    <!-- <div class="eq">
+      $$\min_{\mathbf q}\; w_{rot}(\theta_r(\mathbf q)-\theta_{task})^2
+        + w_{conn}\|\mathbf e_r-\mathbf e_{r,ref}\|^2
+        + w_{axis}\big(1-(\mathbf a_r^\top \mathbf a_{r,ref})^2\big)
+        + w_{pos}\|\mathbf c_r-\mathbf c_{r,ref}\|^2$$
+    </div> -->
+    <ul class="terms">
+      <li><b>Turning angle</b>: track the operator's accumulated twist.</li>
+      <li><b>Fingertip closure</b>: keep pairwise fingertip distances, suppress grip opening.</li>
+      <li><b>Screw axis</b>: keep the tripod normal aligned with the latched axis.</li>
+      <li><b>Tripod centroid</b>: suppress translational drift during turning.</li>
+    </ul>
+    <p>Solved with five central-difference gradient-descent iterations and clipped updates per cycle, real time.</p>
+  </section>
+
+  <section id="results">
+    <h3>Experiments &amp; Results</h3>
+    <p>
+      We compare against <i>Vector Retargeting</i> on a Franka FR3 + Allegro Hand, in simulation and on
+      hardware. Real-world reference is an ArUco marker rigidly attached to the object; 5 trials per method.
+    </p>
+
+    <figure>
+      <img src="static/images/setup.png" alt="Real-world setup">
+      <figcaption><b>Real-world setup.</b> Human with Apple Vision Pro, Franka FR3, Allegro dexterous hand.</figcaption>
+    </figure>
+
+    <h4>Simulation</h4>
+    <table>
+      <thead><tr><th>Method</th><th>RMSE (°)</th><th>MAE (°)</th><th>Axis Dev. (°)</th></tr></thead>
+      <tbody>
+        <tr><td>Vector Retargeting</td><td>27.7</td><td>23.3</td><td>13.6</td></tr>
+        <tr class="ours"><td>DexTwist (Ours)</td><td>18.8</td><td>15.6</td><td>6.1</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Real world (reference: ArUco)</h4>
+    <table>
+      <thead><tr><th>Method</th><th>RMSE (°)</th><th>MAE (°)</th><th>Corr</th></tr></thead>
+      <tbody>
+        <tr><td>Vector Retargeting</td><td>23.2</td><td>15.6</td><td>0.83</td></tr>
+        <tr class="ours"><td>DexTwist (Ours)</td><td>14.3</td><td>11.9</td><td>0.96</td></tr>
+      </tbody>
+    </table>
+
+    <!-- <figure>
+      <img src="static/images/tracking.png" alt="Real-world angle tracking">
+      <figcaption>
+        <b>Turning-angle tracking</b> aggregated over five trials. ArUco is measured object rotation; Human Intent is
+        the twist estimated from the operator's tripod motion.
+      </figcaption>
+    </figure> -->
+
+    <h4>Real-world demonstrations</h4>
+    <figure>
+      <img src="static/images/demo.png" alt="Cap screwing and key unlocking">
+      <figcaption>
+        <b>Cap screwing and key unlocking</b>: approach, contact, twist, release. Turning progress is preserved
+        across re-grasps with a consistent axis.
+      </figcaption>
+    </figure>
+
+    <h4>What we found</h4>
+    <ul class="terms">
+      <li><b>Better angle tracking.</b> Real-world RMSE drops from 23.2° to 14.3° against ArUco and correlation rises from 0.83 to 0.96.</li>
+      <li><b>Stable screw axis.</b> Simulated axis deviation falls from 13.6° to 6.1°.</li>
+      <li><b>Robust to re-grasping.</b> Episode-level turning state carries progress through ratcheting.</li>
+      <li><b>Limitation.</b> Tripod pinch only; visual hand tracking suffers under self-occlusion.</li>
+    </ul>
+  </section>
+
+  <section id="bibtex">
+    <h3>BibTeX</h3>
+    <pre><code>@inproceedings{lee2026dextwist,
+  title={DexTwist: Dexterous Hand Retargeting for Twist Motion via Mixed Reality-Based Teleoperation},
+  author={Lee, Dongmyoung and Li, Chengxi and Lee, Dongheui},
+  booktitle={IEEE International Conference on Advanced Robotics and its Social Impacts (ARSO)},
+  pages={149--154},
+  year={2026},
+  organization={IEEE}
+}</code></pre>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>This work has been partially supported by the European Union project INVERSE under grant agreement No. 101136067.</p>
+    <p>Website template adapted from <a href="https://nerfies.github.io">Nerfies</a>, licensed under
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
+  </div>
+</footer>
+
+</body>
+</html>
